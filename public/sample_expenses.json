@@ -1,0 +1,76 @@
+{
+  "version": "1.0",
+  "timestamp": "2025-01-01T00:00:00.000Z",
+  "app": "Expense Tracker Pro",
+  "data": {
+    "expenses": [
+      {
+        "id": "1704067200000",
+        "description": "Coffee at Starbucks",
+        "amount": 250,
+        "category": "🍔 Food & Dining",
+        "date": "2025-01-01",
+        "timestamp": "2025-01-01T08:00:00.000Z",
+        "notes": "Morning coffee"
+      },
+      {
+        "id": "1704153600000",
+        "description": "Grocery shopping",
+        "amount": 1500,
+        "category": "🛒 Shopping",
+        "date": "2025-01-02",
+        "timestamp": "2025-01-02T10:30:00.000Z",
+        "notes": "Weekly groceries from supermarket"
+      },
+      {
+        "id": "1704240000000",
+        "description": "Uber ride",
+        "amount": 180,
+        "category": "🚗 Transportation",
+        "date": "2025-01-03",
+        "timestamp": "2025-01-03T18:45:00.000Z",
+        "notes": "Ride to office"
+      },
+      {
+        "id": "1704326400000",
+        "description": "Electricity bill",
+        "amount": 2800,
+        "category": "🏠 Bills & Utilities",
+        "date": "2025-01-04",
+        "timestamp": "2025-01-04T14:20:00.000Z",
+        "notes": "Monthly electricity payment"
+      },
+      {
+        "id": "1704412800000",
+        "description": "Movie tickets",
+        "amount": 500,
+        "category": "🎬 Entertainment",
+        "date": "2025-01-05",
+        "timestamp": "2025-01-05T20:00:00.000Z",
+        "notes": "Weekend movie with friends"
+      }
+    ],
+    "categories": [
+      "🍔 Food & Dining",
+      "🚗 Transportation",
+      "🛒 Shopping",
+      "🏠 Bills & Utilities",
+      "🎬 Entertainment",
+      "🏥 Healthcare",
+      "📚 Education",
+      "💼 Business",
+      "👕 Clothing",
+      "🎁 Gifts",
+      "🏖️ Travel",
+      "💳 Banking",
+      "🔧 Maintenance",
+      "📱 Technology",
+      "🏃 Fitness",
+      "🎨 Hobbies",
+      "📰 Subscriptions",
+      "🔄 Other"
+    ],
+    "totalExpenses": 5,
+    "totalAmount": 5230
+  }
+}
