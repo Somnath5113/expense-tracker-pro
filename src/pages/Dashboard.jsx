@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useExpense } from '../context/ExpenseContext';
 import { format, parseISO, subDays, isWithinInterval } from 'date-fns';
 import { 
@@ -31,6 +32,8 @@ const Dashboard = () => {
   const { expenses, categories, error, isLoading, isInitialized } = useExpense();
   const [filterDays, setFilterDays] = useState(30);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Calculate metrics (must be before early return to follow Rules of Hooks)
   const metrics = useMemo(() => {
@@ -116,31 +119,29 @@ const Dashboard = () => {
     );
   }
 
-  const COLORS = ['#00d4aa', '#667eea', '#f093fb', '#ff6b6b', '#4ecdc4'];
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
   return (
     <div className="dashboard">
       <div className="page-header">
-        <h1>💰 Dashboard</h1>
+        <h1>Dashboard</h1>
         <p>Your financial overview at a glance</p>
       </div>
 
       {/* Filters */}
-      <div className="glass-card mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="flex items-center gap-2">
-            <Filter size={20} />
-            Filters
-          </h3>
+      <div className="dashboard-filters">
+        <div className="filter-header">
+          <Filter size={18} />
+          <span>Filters</span>
         </div>
         
-        <div className="flex gap-4 flex-wrap">
-          <div className="form-group">
-            <label className="form-label">Time Period</label>
+        <div className="filter-controls">
+          <div className="filter-group">
+            <label>Time Period</label>
             <select 
               value={filterDays} 
               onChange={(e) => setFilterDays(parseInt(e.target.value))}
-              className="form-input"
+              className="filter-select"
             >
               <option value={7}>Last 7 days</option>
               <option value={14}>Last 14 days</option>
@@ -151,151 +152,262 @@ const Dashboard = () => {
             </select>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Categories</label>
-            <select 
-              multiple 
-              value={selectedCategories}
-              onChange={(e) => setSelectedCategories(Array.from(e.target.selectedOptions, option => option.value))}
-              className="form-input"
-            >
-              <option value="">All Categories</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
+          <div className="filter-group categories-filter">
+            <label>
+              Categories
+              {selectedCategories.length > 0 && (
+                <span className="selected-count">({selectedCategories.length} selected)</span>
+              )}
+            </label>
+            <div className="categories-filter-container">
+              <div className="categories-chips">
+                <div 
+                  className={`category-chip ${selectedCategories.length === 0 ? 'active' : ''}`}
+                  onClick={() => setSelectedCategories([])}
+                >
+                  <span>All</span>
+                  {selectedCategories.length === 0 && <span className="chip-check">✓</span>}
+                </div>
+                {categories.map(category => {
+                  const isSelected = selectedCategories.includes(category);
+                  const categoryIcon = category.split(' ')[0] || '💰';
+                  const categoryName = category.split(' ').slice(1).join(' ') || category;
+                  
+                  return (
+                    <div 
+                      key={category}
+                      className={`category-chip ${isSelected ? 'active' : ''}`}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedCategories(selectedCategories.filter(c => c !== category));
+                        } else {
+                          setSelectedCategories([...selectedCategories, category]);
+                        }
+                      }}
+                    >
+                      <span className="chip-icon">{categoryIcon}</span>
+                      <span className="chip-name">{categoryName}</span>
+                      {isSelected && <span className="chip-check">✓</span>}
+                    </div>
+                  );
+                })}
+              </div>
+              {selectedCategories.length > 0 && (
+                <div className="filter-actions">
+                  <button 
+                    className="clear-filters-btn"
+                    onClick={() => setSelectedCategories([])}
+                  >
+                    Clear All
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Metrics Cards */}
-      <div className="metrics-grid">
-        <div className="metric-card">
-          <div className="metric-icon">💸</div>
-          <div className="metric-value">₹{metrics.total.toLocaleString()}</div>
-          <div className="metric-label">Total Expenses</div>
-          <div className={`flex items-center gap-1 mt-2 ${metrics.changePercent >= 0 ? 'text-red-400' : 'text-green-400'}`}>
-            {metrics.changePercent >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-            <span className="text-sm">{Math.abs(metrics.changePercent).toFixed(1)}%</span>
+      <div className="metrics-overview">
+        <div className="metric-card primary">
+          <div className="metric-content">
+            <div className="metric-header">
+              <DollarSign size={24} className="metric-icon" />
+              <div className="metric-trend">
+                {metrics.changePercent >= 0 ? (
+                  <ArrowUpRight size={16} className="trend-up" />
+                ) : (
+                  <ArrowDownRight size={16} className="trend-down" />
+                )}
+                <span className="trend-value">{Math.abs(metrics.changePercent).toFixed(1)}%</span>
+              </div>
+            </div>
+            <div className="metric-value">₹{metrics.total.toLocaleString()}</div>
+            <div className="metric-label">Total Expenses</div>
           </div>
         </div>
 
         <div className="metric-card">
-          <div className="metric-icon">📅</div>
-          <div className="metric-value">₹{metrics.average.toLocaleString()}</div>
-          <div className="metric-label">Average Daily</div>
+          <div className="metric-content">
+            <div className="metric-header">
+              <Calendar size={24} className="metric-icon" />
+            </div>
+            <div className="metric-value">₹{metrics.average.toLocaleString()}</div>
+            <div className="metric-label">Average Daily</div>
+          </div>
         </div>
 
         <div className="metric-card">
-          <div className="metric-icon">🔝</div>
-          <div className="metric-value">₹{metrics.highest.toLocaleString()}</div>
-          <div className="metric-label">Highest Expense</div>
+          <div className="metric-content">
+            <div className="metric-header">
+              <TrendingUp size={24} className="metric-icon" />
+            </div>
+            <div className="metric-value">₹{metrics.highest.toLocaleString()}</div>
+            <div className="metric-label">Highest Expense</div>
+          </div>
         </div>
 
         <div className="metric-card">
-          <div className="metric-icon">📊</div>
-          <div className="metric-value">{metrics.count}</div>
-          <div className="metric-label">Transactions</div>
+          <div className="metric-content">
+            <div className="metric-header">
+              <CreditCard size={24} className="metric-icon" />
+            </div>
+            <div className="metric-value">{metrics.count}</div>
+            <div className="metric-label">Transactions</div>
+          </div>
         </div>
       </div>
 
       {expenses.length === 0 ? (
-        <div className="glass-card text-center p-6">
-          <div className="text-6xl mb-4">🎯</div>
+        <div className="dashboard-empty">
+          <div className="empty-icon">🎯</div>
           <h2>Welcome to Expense Tracker Pro!</h2>
-          <p className="text-lg text-gray-300 mb-6">
-            Start tracking your expenses to see beautiful insights and analytics.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <button 
-              className="btn-primary"
-              onClick={() => window.location.href = '/add-expense'}
-            >
-              Add Your First Expense
-            </button>
-          </div>
+          <p>Start tracking your expenses to see beautiful insights and analytics.</p>
+          <button 
+            className="btn-primary"
+            onClick={() => navigate('/add-expense')}
+          >
+            Add Your First Expense
+          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Spending Trend Chart */}
-          <div className="chart-container">
-            <div className="chart-header">
-              <h3 className="chart-title">Daily Spending Trend</h3>
+        <div className="dashboard-content">
+          {/* Charts Section */}
+          <div className="charts-section">
+            {/* Spending Trend Chart */}
+            <div className="chart-card">
+              <div className="chart-header">
+                <h3>Daily Spending Trend</h3>
+                <TrendingUp size={20} className="chart-icon" />
+              </div>
+              <div className="chart-content">
+                <ThemedChart>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.2)" />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="var(--text-muted)"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="var(--text-muted)"
+                        fontSize={12}
+                      />
+                      <Tooltip 
+                        formatter={(value) => [`₹${value.toLocaleString()}`, 'Amount']}
+                        contentStyle={{
+                          backgroundColor: 'var(--glass-bg)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '12px',
+                          backdropFilter: 'blur(10px)'
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="amount" 
+                        stroke="#3b82f6" 
+                        strokeWidth={2}
+                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, fill: '#3b82f6' }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ThemedChart>
+              </div>
             </div>
-            <ThemedChart>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip 
-                    formatter={(value) => [`₹${value.toLocaleString()}`, 'Amount']}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="amount" 
-                    stroke="#00d4aa" 
-                    strokeWidth={3}
-                    dot={{ fill: '#00d4aa', strokeWidth: 2, r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </ThemedChart>
-          </div>
 
-          {/* Category Breakdown */}
-          <div className="chart-container">
-            <div className="chart-header">
-              <h3 className="chart-title">Top Categories</h3>
+            {/* Category Breakdown */}
+            <div className="categories-section">
+              <div className="section-header">
+                <h3>Top Categories</h3>
+                <div className="chart-icon">📊</div>
+              </div>
+              
+              <div className="categories-grid">
+                {categoryData.map((category, index) => {
+                  const percentage = ((category.amount / metrics.total) * 100).toFixed(1);
+                  const categoryIcon = categories.find(cat => cat.includes(category.category))?.split(' ')[0] || '💰';
+                  
+                  return (
+                    <div key={category.category} className="category-card">
+                      <div className="category-header">
+                        <div className="category-icon" style={{ backgroundColor: COLORS[index % COLORS.length] }}>
+                          {categoryIcon}
+                        </div>
+                        <div className="category-info">
+                          <h4 className="category-name">{category.category}</h4>
+                          <div className="category-percentage">{percentage}%</div>
+                        </div>
+                        <div className="category-amount">₹{category.amount.toLocaleString()}</div>
+                      </div>
+                      <div className="category-progress">
+                        <div 
+                          className="category-progress-fill" 
+                          style={{ 
+                            width: `${percentage}%`,
+                            backgroundColor: COLORS[index % COLORS.length]
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Small pie chart for visual reference */}
+              <div className="category-chart-small">
+                <ThemedChart>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={60}
+                        fill="#8884d8"
+                        dataKey="amount"
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value) => [`₹${value.toLocaleString()}`, 'Amount']}
+                        contentStyle={{
+                          backgroundColor: 'var(--glass-bg)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '12px',
+                          backdropFilter: 'blur(10px)'
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </ThemedChart>
+              </div>
             </div>
-            <ThemedChart>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="amount"
-                    label={({ category, percent }) => `${category} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value) => [`₹${value.toLocaleString()}`, 'Amount']}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </ThemedChart>
           </div>
 
           {/* Recent Expenses */}
-          <div className="glass-card lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="flex items-center gap-2">
-                <CreditCard size={20} />
-                Recent Expenses
-              </h3>
+          <div className="expenses-section">
+            <div className="section-header">
+              <h3>Recent Expenses</h3>
               <button 
                 className="btn-primary"
-                onClick={() => window.location.href = '/add-expense'}
+                onClick={() => navigate('/add-expense')}
               >
                 Add New
               </button>
             </div>
             
-            <div className="max-h-96 overflow-y-auto">
+            <div className="expenses-list">
               {metrics.filteredExpenses.slice(0, 10).map((expense) => (
-                <div key={expense.id} className="expense-card">
-                  <div className="expense-info">
-                    <div className="expense-description">{expense.description}</div>
+                <div key={expense.id} className="expense-item">
+                  <div className="expense-details">
+                    <div className="expense-title">{expense.description}</div>
                     <div className="expense-meta">
-                      <span>{expense.category}</span>
-                      <span>•</span>
-                      <span>{format(parseISO(expense.date), 'MMM dd, yyyy')}</span>
+                      <span className="expense-category">{expense.category}</span>
+                      <span className="expense-date">{format(parseISO(expense.date), 'MMM dd, yyyy')}</span>
                     </div>
                   </div>
                   <div className="expense-amount">

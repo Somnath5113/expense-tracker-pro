@@ -12,7 +12,6 @@ import {
   Shield,
   Sparkles
 } from 'lucide-react';
-import ThemeToggle from './ThemeToggle';
 import './Sidebar.css';
 
 const Sidebar = () => {
@@ -42,7 +41,6 @@ const Sidebar = () => {
             <p>Track • Analyze • Save</p>
           </div>
         </div>
-        <ThemeToggle />
       </div>
 
       <nav className="sidebar-nav">

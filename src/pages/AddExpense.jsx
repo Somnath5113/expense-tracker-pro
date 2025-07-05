@@ -45,8 +45,8 @@ const AddExpense = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.amount || !formData.description || !formData.category) {
-      error('Missing Information', 'Please fill in all fields');
+    if (!formData.amount || !formData.category) {
+      error('Missing Information', 'Please fill in amount and category');
       return;
     }
 
@@ -61,13 +61,13 @@ const AddExpense = () => {
       addExpense({
         amount: parseFloat(formData.amount),
         category: formData.category,
-        description: formData.description,
+        description: formData.description || 'No description',
         date: formData.date
       });
       
       success(
         'Expense Added Successfully! 💰',
-        `₹${formData.amount} for ${formData.description} has been saved and backed up to CSV.`
+        `₹${formData.amount} for ${formData.description || 'expense'} has been saved and backed up to CSV.`
       );
       
       setShowSuccess(true);
@@ -170,16 +170,15 @@ const AddExpense = () => {
               <div className="form-group">
                 <label className="form-label">
                   <FileText size={16} className="inline mr-1" />
-                  Description
+                  Description <span className="optional-label">(Optional)</span>
                 </label>
                 <input
                   type="text"
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  placeholder="What did you spend on?"
+                  placeholder="What did you spend on? (Optional)"
                   className="form-input"
-                  required
                 />
               </div>
 
@@ -298,9 +297,9 @@ const AddExpense = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 bg-white/5 rounded-lg">
             <div className="text-lg mb-2">🎯</div>
-            <h4 className="font-medium mb-1">Be Specific</h4>
+            <h4 className="font-medium mb-1">Quick Entry</h4>
             <p className="text-sm text-gray-300">
-              Use detailed descriptions to better track your spending patterns.
+              Only amount and category are required. Description is optional for faster entry.
             </p>
           </div>
           <div className="p-4 bg-white/5 rounded-lg">

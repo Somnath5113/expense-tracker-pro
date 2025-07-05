@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useTheme } from './context/ThemeContext';
 import { useNotification } from './context/NotificationContext';
-import Sidebar from './components/Sidebar';
+import Navigation from './components/Navigation';
+import FloatingCalculator from './components/FloatingCalculator';
 import Dashboard from './pages/Dashboard';
 import AddExpense from './pages/AddExpense';
 import Calculator from './pages/Calculator';
@@ -17,7 +18,7 @@ function App() {
   return (
     <Router>
       <div className={`app ${theme}`}>
-        <Sidebar />
+        <Navigation />
         <main className="main-content">
           <div className="container">
             <Routes>
@@ -30,6 +31,7 @@ function App() {
             </Routes>
           </div>
         </main>
+        <FloatingCalculator />
       </div>
     </Router>
   );

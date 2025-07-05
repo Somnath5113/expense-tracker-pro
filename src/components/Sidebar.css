@@ -18,7 +18,6 @@
 .sidebar-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: var(--space-xl) var(--space-lg);
   border-bottom: 1px solid var(--glass-border);
   margin-bottom: var(--space-lg);
@@ -210,84 +209,4 @@
   .sidebar.open {
     transform: translateX(0);
   }
-}
-
-/* Theme Toggle Component */
-.theme-toggle {
-  position: relative;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-}
-
-.theme-toggle::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 50%;
-}
-
-.theme-toggle:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.theme-toggle:hover::before {
-  opacity: 1;
-}
-
-.theme-toggle:active {
-  transform: scale(0.95);
-}
-
-.theme-icon {
-  width: 24px;
-  height: 24px;
-  color: #ffffff;
-  transition: all 0.3s ease;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  position: relative;
-  z-index: 1;
-}
-
-.theme-toggle:hover .theme-icon {
-  transform: rotate(180deg);
-  color: #ffffff;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
-}
-
-/* Animated background effect */
-.theme-toggle::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-  transition: all 0.3s ease;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.theme-toggle:hover::after {
-  width: 100px;
-  height: 100px;
 }

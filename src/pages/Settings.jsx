@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useExpense } from '../context/ExpenseContext';
+import { useTheme } from '../context/ThemeContext';
+import { useNotification } from '../context/NotificationContext';
 import CSVManager from '../components/CSVManager';
 import FileStoragePanel from '../components/FileStoragePanel';
 import { 
@@ -13,7 +15,10 @@ import {
   Shield,
   Database,
   Tag,
-  HelpCircle
+  HelpCircle,
+  Sun,
+  Moon,
+  Palette
 } from 'lucide-react';
 
 const Settings = () => {
@@ -28,10 +33,22 @@ const Settings = () => {
     exportToTXT 
   } = useExpense();
   
+  const { theme, toggleTheme } = useTheme();
+  const { success } = useNotification();
+  
   const [newCategory, setNewCategory] = useState('');
   const [showDangerZone, setShowDangerZone] = useState(false);
   const [confirmClear, setConfirmClear] = useState('');
   const [showImportHelp, setShowImportHelp] = useState(false);
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    toggleTheme();
+    success(
+      `Switched to ${newTheme} theme!`,
+      `The interface now uses ${newTheme} mode. Your preference has been saved.`
+    );
+  };
 
   const handleAddCategory = (e) => {
     e.preventDefault();
@@ -127,277 +144,428 @@ const Settings = () => {
 
   return (
     <div className="settings">
+      {/* Header Section */}
       <div className="page-header">
         <h1>⚙️ Settings</h1>
-        <p>Manage your categories, data, and app preferences</p>
+        <p>Customize your expense tracking experience</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Category Management */}
-        <div className="lg:col-span-2">
-          <div className="glass-card">
-            <h3 className="flex items-center gap-2 mb-4">
-              <Tag size={20} />
-              Category Management
-            </h3>
-            
-            {/* Add Category Form */}
-            <form onSubmit={handleAddCategory} className="mb-6">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  placeholder="Enter new category (e.g., 🎮 Gaming)"
-                  className="form-input flex-1"
-                />
-                <button type="submit" className="btn-primary flex items-center gap-2">
-                  <Plus size={16} />
-                  Add
-                </button>
-              </div>
-            </form>
+      {/* Quick Stats Overview */}
+      <div className="metrics-grid mb-8">
+        <div className="metric-card">
+          <div className="metric-icon">📊</div>
+          <div className="metric-value">{appInfo.totalExpenses}</div>
+          <div className="metric-label">Total Expenses</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-icon">🏷️</div>
+          <div className="metric-value">{appInfo.totalCategories}</div>
+          <div className="metric-label">Categories</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-icon">💾</div>
+          <div className="metric-value">{(appInfo.storageUsed / 1024).toFixed(1)} KB</div>
+          <div className="metric-label">Storage Used</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-icon">🌙</div>
+          <div className="metric-value">{theme === 'dark' ? 'Dark' : 'Light'}</div>
+          <div className="metric-label">Theme Mode</div>
+        </div>
+      </div>
 
-            {/* Category List */}
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {categories.map((category) => (
-                <div key={category} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                  <span className="font-medium">{category}</span>
+      {/* Main Content Grid */}
+      <div className="settings-grid">
+        {/* Left Column - Primary Settings */}
+        <div className="settings-primary">
+          {/* Theme Settings - Moved to top for better visibility */}
+          <div className="glass-card setting-section">
+            <div className="setting-header">
+              <h3 className="flex items-center gap-3">
+                <div className="setting-icon">
+                  <Palette size={24} />
+                </div>
+                <div>
+                  <div className="setting-title">Appearance</div>
+                  <div className="setting-subtitle">Customize your visual experience</div>
+                </div>
+              </h3>
+            </div>
+            
+            <div className="setting-content">
+              <div className="theme-toggle-section">
+                <div className="theme-option">
+                  <div className="theme-info">
+                    <h4 className="font-semibold">Theme Mode</h4>
+                    <p className="text-sm text-gray-400">
+                      {theme === 'dark' 
+                        ? 'Dark theme reduces eye strain in low-light conditions' 
+                        : 'Light theme provides a clean, bright interface'}
+                    </p>
+                  </div>
                   <button
-                    onClick={() => handleRemoveCategory(category)}
-                    className="btn-danger p-2 flex items-center gap-1"
+                    onClick={handleThemeToggle}
+                    className="theme-toggle-btn-modern"
                   >
-                    <Trash2 size={14} />
+                    <div className={`theme-toggle-slider ${theme === 'dark' ? 'active' : ''}`}>
+                      <div className="theme-toggle-icon">
+                        {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
+                      </div>
+                    </div>
                   </button>
                 </div>
-              ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Category Management */}
+          <div className="glass-card setting-section">
+            <div className="setting-header">
+              <h3 className="flex items-center gap-3">
+                <div className="setting-icon">
+                  <Tag size={24} />
+                </div>
+                <div>
+                  <div className="setting-title">Categories</div>
+                  <div className="setting-subtitle">Organize your expenses with custom categories</div>
+                </div>
+              </h3>
+            </div>
+            
+            <div className="setting-content">
+              {/* Add Category Form */}
+              <form onSubmit={handleAddCategory} className="add-category-form">
+                <div className="form-group">
+                  <label className="form-label">Add New Category</label>
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      placeholder="e.g., 🎮 Gaming, 🍕 Food, 🚗 Transport"
+                      className="form-input"
+                    />
+                    <button type="submit" className="btn-primary">
+                      <Plus size={16} />
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </form>
+
+              {/* Category List */}
+              <div className="category-list">
+                <div className="category-list-header">
+                  <h4 className="font-medium">Your Categories ({categories.length})</h4>
+                </div>
+                <div className="category-items">
+                  {categories.map((category, index) => (
+                    <div key={category} className="category-item">
+                      <div className="category-info">
+                        <span className="category-name">{category}</span>
+                        <span className="category-index">#{index + 1}</span>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveCategory(category)}
+                        className="btn-danger-sm"
+                        title={`Remove ${category}`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Data Management */}
-          <div className="glass-card mt-6">
-            <h3 className="flex items-center gap-2 mb-4">
-              <Database size={20} />
-              Data Management
-            </h3>
-            
-            {/* Import Section */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium">Import Data</h4>
-                <button
-                  onClick={() => setShowImportHelp(!showImportHelp)}
-                  className="btn-primary p-2"
-                >
-                  <HelpCircle size={16} />
-                </button>
-              </div>
-              
-              {showImportHelp && (
-                <div className="mb-4 p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg">
-                  <h5 className="font-medium mb-2">Import Format Requirements:</h5>
-                  <ul className="text-sm text-gray-300 space-y-1">
-                    <li>• CSV: Headers must be "Date,Amount,Category,Description"</li>
-                    <li>• JSON: Must contain an "expenses" array</li>
-                    <li>• Date format: YYYY-MM-DD</li>
-                    <li>• Amount: Numeric values only</li>
-                  </ul>
+          <div className="glass-card setting-section">
+            <div className="setting-header">
+              <h3 className="flex items-center gap-3">
+                <div className="setting-icon">
+                  <Database size={24} />
                 </div>
-              )}
-              
-              <input
-                type="file"
-                accept=".csv,.json"
-                onChange={handleImport}
-                className="hidden"
-                id="import-file"
-              />
-              <label
-                htmlFor="import-file"
-                className="btn-primary cursor-pointer flex items-center justify-center gap-2 w-full"
-              >
-                <Upload size={16} />
-                Import CSV/JSON
-              </label>
-            </div>
-
-            {/* Export Section */}
-            <div className="mb-6">
-              <h4 className="font-medium mb-3">Export Data</h4>
-              <div className="flex gap-2">
-                <button
-                  onClick={exportToCSV}
-                  className="btn-success flex items-center gap-2 flex-1"
-                >
-                  <Download size={16} />
-                  Export CSV
-                </button>
-                <button
-                  onClick={exportToTXT}
-                  className="btn-primary flex items-center gap-2 flex-1"
-                >
-                  <Download size={16} />
-                  Export TXT
-                </button>
-              </div>
-            </div>
-
-            {/* Backup Info */}
-            <div className="p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
-              <div className="flex items-start gap-2">
-                <Shield size={16} className="mt-1 text-green-400" />
                 <div>
-                  <h5 className="font-medium text-green-400">Auto-Save Active</h5>
-                  <p className="text-sm text-gray-300">
-                    Your data is automatically saved to browser storage. 
-                    Export regularly for backup.
-                  </p>
+                  <div className="setting-title">Data Management</div>
+                  <div className="setting-subtitle">Import, export, and backup your data</div>
                 </div>
-              </div>
+              </h3>
             </div>
-          </div>
-
-          {/* Enhanced CSV Data Management */}
-          <div className="mt-6">
-            <CSVManager />
-          </div>
-
-          {/* File Storage Panel */}
-          <div className="mt-6">
-            <FileStoragePanel />
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* App Information */}
-          <div className="glass-card">
-            <h3 className="flex items-center gap-2 mb-4">
-              <Info size={20} />
-              App Information
-            </h3>
             
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-300">Version:</span>
-                <span className="font-medium">{appInfo.version}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-300">Build Date:</span>
-                <span className="font-medium">{appInfo.buildDate}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-300">Total Expenses:</span>
-                <span className="font-medium">{appInfo.totalExpenses}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-300">Categories:</span>
-                <span className="font-medium">{appInfo.totalCategories}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-300">Storage Used:</span>
-                <span className="font-medium">{(appInfo.storageUsed / 1024).toFixed(2)} KB</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="glass-card">
-            <h3 className="flex items-center gap-2 mb-4">
-              <SettingsIcon size={20} />
-              Quick Actions
-            </h3>
-            
-            <div className="space-y-2">
-              <button
-                onClick={() => window.location.href = '/'}
-                className="w-full btn-primary"
-              >
-                Go to Dashboard
-              </button>
-              <button
-                onClick={() => window.location.href = '/add-expense'}
-                className="w-full btn-success"
-              >
-                Add New Expense
-              </button>
-              <button
-                onClick={() => window.location.href = '/analytics'}
-                className="w-full btn-primary"
-              >
-                View Analytics
-              </button>
-            </div>
-          </div>
-
-          {/* Danger Zone */}
-          <div className="glass-card border-red-500/30">
-            <h3 className="flex items-center gap-2 mb-4 text-red-400">
-              <AlertTriangle size={20} />
-              Danger Zone
-            </h3>
-            
-            {!showDangerZone ? (
-              <button
-                onClick={() => setShowDangerZone(true)}
-                className="w-full btn-danger"
-              >
-                Show Danger Zone
-              </button>
-            ) : (
-              <div className="space-y-4">
-                <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
-                  <h4 className="font-medium text-red-400 mb-2">⚠️ Clear All Data</h4>
-                  <p className="text-sm text-gray-300 mb-3">
-                    This will permanently delete all your expenses and reset categories to default. 
-                    This action cannot be undone.
-                  </p>
-                  
-                  <input
-                    type="text"
-                    value={confirmClear}
-                    onChange={(e) => setConfirmClear(e.target.value)}
-                    placeholder="Type 'CLEAR ALL DATA' to confirm"
-                    className="form-input mb-3"
-                  />
-                  
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleClearAllData}
-                      className="btn-danger flex-1"
-                      disabled={confirmClear !== 'CLEAR ALL DATA'}
+            <div className="setting-content">
+              {/* Import/Export Actions */}
+              <div className="data-actions">
+                <div className="action-group">
+                  <h4 className="action-title">Import Data</h4>
+                  <div className="action-buttons">
+                    <input
+                      type="file"
+                      accept=".csv,.json"
+                      onChange={handleImport}
+                      className="hidden"
+                      id="import-file"
+                    />
+                    <label
+                      htmlFor="import-file"
+                      className="btn-primary action-btn"
                     >
-                      Clear All Data
+                      <Upload size={16} />
+                      Import CSV/JSON
+                    </label>
+                    <button
+                      onClick={() => setShowImportHelp(!showImportHelp)}
+                      className="btn-secondary action-btn"
+                    >
+                      <HelpCircle size={16} />
+                      Format Info
+                    </button>
+                  </div>
+                </div>
+
+                <div className="action-group">
+                  <h4 className="action-title">Export Data</h4>
+                  <div className="action-buttons">
+                    <button
+                      onClick={exportToCSV}
+                      className="btn-success action-btn"
+                    >
+                      <Download size={16} />
+                      Export CSV
                     </button>
                     <button
-                      onClick={() => {
-                        setShowDangerZone(false);
-                        setConfirmClear('');
-                      }}
-                      className="btn-primary flex-1"
+                      onClick={exportToTXT}
+                      className="btn-primary action-btn"
                     >
-                      Cancel
+                      <Download size={16} />
+                      Export TXT
                     </button>
                   </div>
                 </div>
               </div>
-            )}
+
+              {showImportHelp && (
+                <div className="import-help">
+                  <h5 className="font-medium mb-2">📋 Import Format Requirements</h5>
+                  <ul className="help-list">
+                    <li><strong>CSV:</strong> Headers must be "Date,Amount,Category,Description"</li>
+                    <li><strong>JSON:</strong> Must contain an "expenses" array</li>
+                    <li><strong>Date:</strong> Format should be YYYY-MM-DD</li>
+                    <li><strong>Amount:</strong> Numeric values only (no currency symbols)</li>
+                  </ul>
+                </div>
+              )}
+
+              {/* Backup Status */}
+              <div className="backup-status">
+                <div className="status-indicator">
+                  <Shield size={16} className="text-green-400" />
+                  <div>
+                    <h5 className="font-medium text-green-400">Auto-Save Active</h5>
+                    <p className="text-sm text-gray-400">
+                      Data automatically saved to browser storage
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Secondary Settings & Info */}
+        <div className="settings-secondary">
+          {/* Quick Actions */}
+          <div className="glass-card setting-section">
+            <div className="setting-header">
+              <h3 className="flex items-center gap-3">
+                <div className="setting-icon">
+                  <SettingsIcon size={24} />
+                </div>
+                <div>
+                  <div className="setting-title">Quick Actions</div>
+                  <div className="setting-subtitle">Navigate to key features</div>
+                </div>
+              </h3>
+            </div>
+            
+            <div className="setting-content">
+              <div className="quick-actions">
+                <button
+                  onClick={() => window.location.href = '/'}
+                  className="quick-action-btn"
+                >
+                  <div className="quick-action-icon">🏠</div>
+                  <div className="quick-action-text">Dashboard</div>
+                </button>
+                <button
+                  onClick={() => window.location.href = '/add-expense'}
+                  className="quick-action-btn"
+                >
+                  <div className="quick-action-icon">➕</div>
+                  <div className="quick-action-text">Add Expense</div>
+                </button>
+                <button
+                  onClick={() => window.location.href = '/analytics'}
+                  className="quick-action-btn"
+                >
+                  <div className="quick-action-icon">📊</div>
+                  <div className="quick-action-text">Analytics</div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* App Information */}
+          <div className="glass-card setting-section">
+            <div className="setting-header">
+              <h3 className="flex items-center gap-3">
+                <div className="setting-icon">
+                  <Info size={24} />
+                </div>
+                <div>
+                  <div className="setting-title">App Information</div>
+                  <div className="setting-subtitle">Version and system details</div>
+                </div>
+              </h3>
+            </div>
+            
+            <div className="setting-content">
+              <div className="app-info">
+                <div className="info-item">
+                  <span className="info-label">Version</span>
+                  <span className="info-value">{appInfo.version}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Build Date</span>
+                  <span className="info-value">{appInfo.buildDate}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Data Entries</span>
+                  <span className="info-value">{appInfo.totalExpenses}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Storage Size</span>
+                  <span className="info-value">{(appInfo.storageUsed / 1024).toFixed(2)} KB</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Danger Zone */}
+          <div className="glass-card setting-section danger-zone">
+            <div className="setting-header">
+              <h3 className="flex items-center gap-3">
+                <div className="setting-icon danger">
+                  <AlertTriangle size={24} />
+                </div>
+                <div>
+                  <div className="setting-title danger">Danger Zone</div>
+                  <div className="setting-subtitle">Irreversible actions</div>
+                </div>
+              </h3>
+            </div>
+            
+            <div className="setting-content">
+              {!showDangerZone ? (
+                <button
+                  onClick={() => setShowDangerZone(true)}
+                  className="btn-danger-outline w-full"
+                >
+                  <AlertTriangle size={16} />
+                  Show Danger Zone
+                </button>
+              ) : (
+                <div className="danger-content">
+                  <div className="danger-warning">
+                    <h4 className="font-medium text-red-400 mb-2">⚠️ Clear All Data</h4>
+                    <p className="text-sm text-gray-300 mb-4">
+                      This will permanently delete all your expenses and reset categories to default. 
+                      This action cannot be undone.
+                    </p>
+                    
+                    <div className="confirm-section">
+                      <input
+                        type="text"
+                        value={confirmClear}
+                        onChange={(e) => setConfirmClear(e.target.value)}
+                        placeholder="Type 'CLEAR ALL DATA' to confirm"
+                        className="form-input mb-3"
+                      />
+                      
+                      <div className="confirm-actions">
+                        <button
+                          onClick={handleClearAllData}
+                          className="btn-danger"
+                          disabled={confirmClear !== 'CLEAR ALL DATA'}
+                        >
+                          Clear All Data
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowDangerZone(false);
+                            setConfirmClear('');
+                          }}
+                          className="btn-secondary"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Advanced Components */}
+      <div className="advanced-components">
+        <div className="glass-card">
+          <div className="setting-header">
+            <h3 className="flex items-center gap-3">
+              <div className="setting-icon">
+                <Database size={24} />
+              </div>
+              <div>
+                <div className="setting-title">Advanced Data Management</div>
+                <div className="setting-subtitle">Enhanced CSV management and file storage options</div>
+              </div>
+            </h3>
+          </div>
+          
+          <div className="setting-content">
+            <div className="advanced-components-grid">
+              <div className="component-section">
+                <h4 className="component-title">CSV Manager</h4>
+                <CSVManager />
+              </div>
+              
+              <div className="component-section">
+                <h4 className="component-title">File Storage</h4>
+                <FileStoragePanel />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="glass-card mt-8">
-        <div className="text-center">
-          <h3 className="mb-2">💰 Expense Tracker Pro</h3>
-          <p className="text-gray-300 text-sm">
-            A modern, responsive expense tracking application built with React.js
-          </p>
-          <div className="mt-4 flex justify-center gap-4 text-sm text-gray-400">
-            <span>🎨 Glass-morphism Design</span>
-            <span>📱 Mobile Responsive</span>
-            <span>🔒 Secure Local Storage</span>
-            <span>📊 Advanced Analytics</span>
+      <div className="settings-footer">
+        <div className="glass-card">
+          <div className="footer-content">
+            <div className="footer-brand">
+              <h3 className="footer-title">💰 Expense Tracker Pro</h3>
+              <p className="footer-description">
+                Modern expense tracking with beautiful design and powerful features
+              </p>
+            </div>
+            <div className="footer-features">
+              <div className="feature-badge">🎨 Glass Design</div>
+              <div className="feature-badge">📱 Mobile Ready</div>
+              <div className="feature-badge">🔒 Secure Storage</div>
+              <div className="feature-badge">📊 Rich Analytics</div>
+            </div>
           </div>
         </div>
       </div>
