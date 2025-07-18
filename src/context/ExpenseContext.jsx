@@ -81,11 +81,16 @@ function expenseReducer(state, action) {
       };
     
     case ACTIONS.ADD_CATEGORY:
-      return {
-        ...state,
-        categories: [...state.categories, action.payload],
-        error: null
-      };
+      // Ensure no duplicate categories and proper formatting
+      if (action.payload && typeof action.payload === 'string' && action.payload.trim() && 
+          !state.categories.includes(action.payload.trim())) {
+        return {
+          ...state,
+          categories: [...state.categories, action.payload.trim()],
+          error: null
+        };
+      }
+      return state;
     
     case ACTIONS.REMOVE_CATEGORY:
       return {
@@ -117,13 +122,20 @@ function expenseReducer(state, action) {
       return {
         ...state,
         expenses: action.payload.expenses || state.expenses,
-        categories: action.payload.categories || state.categories,
+        categories: action.payload.categories ? 
+          [...new Set([...state.categories, ...action.payload.categories])] : 
+          state.categories,
         error: null
       };
     
     case ACTIONS.CLEAR_ALL_DATA:
       return {
-        ...initialState
+        ...state,
+        // Only clear expenses, keep categories and other settings
+        expenses: [],
+        calculatorAmount: 0,
+        isLoading: false,
+        error: null
       };
     
     default:
@@ -160,8 +172,10 @@ export const ExpenseProvider = ({ children }) => {
         if (csvBackup && csvBackup.expenses.length > 0) {
           console.log('✅ Loading from CSV backup:', csvBackup.expenses.length, 'expenses');
           dispatch({ type: ACTIONS.LOAD_EXPENSES, payload: csvBackup.expenses });
-          if (csvBackup.categories.length > 0) {
-            dispatch({ type: ACTIONS.IMPORT_DATA, payload: { categories: csvBackup.categories } });
+          if (csvBackup.categories && csvBackup.categories.length > 0) {
+            // Merge categories, keeping unique ones
+            const mergedCategories = [...new Set([...initialState.categories, ...csvBackup.categories])];
+            dispatch({ type: ACTIONS.IMPORT_DATA, payload: { categories: mergedCategories } });
           }
           setIsInitialized(true);
           return;
@@ -180,8 +194,10 @@ export const ExpenseProvider = ({ children }) => {
         
         if (savedCategories) {
           const categories = JSON.parse(savedCategories);
-          dispatch({ type: ACTIONS.IMPORT_DATA, payload: { categories } });
-          console.log('📋 Loaded categories:', categories.length);
+          // Merge with initial categories to ensure we don't lose defaults
+          const mergedCategories = [...new Set([...initialState.categories, ...categories])];
+          dispatch({ type: ACTIONS.IMPORT_DATA, payload: { categories: mergedCategories } });
+          console.log('📋 Loaded categories:', mergedCategories.length);
         }
         
         setIsInitialized(true);
@@ -207,8 +223,20 @@ export const ExpenseProvider = ({ children }) => {
       return;
     }
 
+    // Save even if no expenses but custom categories exist
+    if (state.expenses.length === 0 && state.categories.length > 0) {
+      // Save categories even when no expenses
+      try {
+        localStorage.setItem('categories', JSON.stringify(state.categories));
+        console.log('💾 Saving categories only:', state.categories.length, 'categories');
+      } catch (error) {
+        console.error('💥 Error saving categories:', error);
+      }
+      return;
+    }
+
     try {
-      console.log('💾 Saving data:', state.expenses.length, 'expenses');
+      console.log('💾 Saving data:', state.expenses.length, 'expenses,', state.categories.length, 'categories');
       
       // Save to localStorage (for compatibility)
       localStorage.setItem('expenses', JSON.stringify(state.expenses));
@@ -253,8 +281,9 @@ export const ExpenseProvider = ({ children }) => {
   };
 
   const addCategory = (category) => {
-    if (!state.categories.includes(category)) {
-      dispatch({ type: ACTIONS.ADD_CATEGORY, payload: category });
+    // Ensure we don't add duplicate categories and the category is valid
+    if (category && typeof category === 'string' && category.trim() && !state.categories.includes(category.trim())) {
+      dispatch({ type: ACTIONS.ADD_CATEGORY, payload: category.trim() });
     }
   };
 
@@ -271,9 +300,28 @@ export const ExpenseProvider = ({ children }) => {
   };
 
   const clearAllData = () => {
-    localStorage.removeItem('expenses');
-    localStorage.removeItem('categories');
-    dispatch({ type: ACTIONS.CLEAR_ALL_DATA });
+    try {
+      // Clear only expense data, keep categories
+      localStorage.removeItem('expenses');
+      localStorage.removeItem('expense-tracker-csv-backup');
+      localStorage.removeItem('expense-tracker-csv-timestamp');
+      
+      // Don't clear categories from localStorage - users want to keep them
+      // Don't clear theme - users want to keep their preference
+      
+      // Clear any session storage if used
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.clear();
+      }
+      
+      // Reset only expense data, keep categories
+      dispatch({ type: ACTIONS.CLEAR_ALL_DATA });
+      
+      console.log('✅ All expense data cleared successfully (categories preserved)');
+    } catch (error) {
+      console.error('💥 Error clearing data:', error);
+      dispatch({ type: ACTIONS.SET_ERROR, payload: 'Failed to clear expense data' });
+    }
   };
 
   const exportToCSV = () => {

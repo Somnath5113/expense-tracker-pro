@@ -20,12 +20,19 @@ const AddExpense = () => {
   const { success, error } = useNotification();
   const [formData, setFormData] = useState({
     amount: '',
-    category: categories[0] || '',
+    category: '',
     description: '',
     date: format(new Date(), 'yyyy-MM-dd')
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // Initialize category when categories are loaded
+  useEffect(() => {
+    if (categories.length > 0 && !formData.category) {
+      setFormData(prev => ({ ...prev, category: categories[0] }));
+    }
+  }, [categories, formData.category]);
 
   // Update amount if calculator amount is available
   useEffect(() => {
@@ -161,9 +168,13 @@ const AddExpense = () => {
                   className="form-input"
                   required
                 >
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
+                  {categories.length === 0 ? (
+                    <option value="">Loading categories...</option>
+                  ) : (
+                    categories.map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))
+                  )}
                 </select>
               </div>
 

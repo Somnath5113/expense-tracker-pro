@@ -40,6 +40,227 @@ const Settings = () => {
   const [showDangerZone, setShowDangerZone] = useState(false);
   const [confirmClear, setConfirmClear] = useState('');
   const [showImportHelp, setShowImportHelp] = useState(false);
+  const [showEmojiSuggestions, setShowEmojiSuggestions] = useState(false);
+  const [emojiSearchTerm, setEmojiSearchTerm] = useState('');
+
+  // Emoji suggestions for categories
+  const emojiSuggestions = [
+    // Food & Dining
+    { emoji: '🍔', label: 'Food & Dining' },
+    { emoji: '🍕', label: 'Pizza' },
+    { emoji: '🍜', label: 'Noodles' },
+    { emoji: '🍱', label: 'Lunch Box' },
+    { emoji: '🍣', label: 'Sushi' },
+    { emoji: '🍰', label: 'Dessert' },
+    { emoji: '☕', label: 'Coffee' },
+    { emoji: '🍺', label: 'Drinks' },
+    { emoji: '🥗', label: 'Salad' },
+    { emoji: '🍳', label: 'Breakfast' },
+    
+    // Transportation
+    { emoji: '🚗', label: 'Transportation' },
+    { emoji: '🚕', label: 'Taxi' },
+    { emoji: '🚌', label: 'Bus' },
+    { emoji: '🚇', label: 'Metro' },
+    { emoji: '🚲', label: 'Bike' },
+    { emoji: '⛽', label: 'Fuel' },
+    { emoji: '🛵', label: 'Scooter' },
+    { emoji: '🚁', label: 'Helicopter' },
+    { emoji: '✈️', label: 'Flight' },
+    { emoji: '🚢', label: 'Ship' },
+    
+    // Shopping
+    { emoji: '🛒', label: 'Shopping' },
+    { emoji: '🛍️', label: 'Shopping Bags' },
+    { emoji: '👗', label: 'Dress' },
+    { emoji: '👕', label: 'Clothing' },
+    { emoji: '👟', label: 'Shoes' },
+    { emoji: '👜', label: 'Handbag' },
+    { emoji: '💍', label: 'Jewelry' },
+    { emoji: '👓', label: 'Glasses' },
+    { emoji: '🎒', label: 'Backpack' },
+    { emoji: '🧴', label: 'Cosmetics' },
+    
+    // Bills & Utilities
+    { emoji: '🏠', label: 'Bills & Utilities' },
+    { emoji: '⚡', label: 'Electricity' },
+    { emoji: '💧', label: 'Water' },
+    { emoji: '🔥', label: 'Gas' },
+    { emoji: '🌐', label: 'Internet' },
+    { emoji: '📞', label: 'Phone' },
+    { emoji: '�', label: 'Rent' },
+    { emoji: '🔌', label: 'Power' },
+    { emoji: '📡', label: 'Cable TV' },
+    { emoji: '🗑️', label: 'Waste' },
+    
+    // Entertainment
+    { emoji: '�🎬', label: 'Entertainment' },
+    { emoji: '�', label: 'Gaming' },
+    { emoji: '🎵', label: 'Music' },
+    { emoji: '🎤', label: 'Karaoke' },
+    { emoji: '🎪', label: 'Circus' },
+    { emoji: '🎨', label: 'Art' },
+    { emoji: '🎭', label: 'Theater' },
+    { emoji: '🎸', label: 'Concert' },
+    { emoji: '🎯', label: 'Games' },
+    { emoji: '🎳', label: 'Bowling' },
+    
+    // Healthcare
+    { emoji: '�🏥', label: 'Healthcare' },
+    { emoji: '💊', label: 'Medicine' },
+    { emoji: '🩺', label: 'Doctor' },
+    { emoji: '🦷', label: 'Dentist' },
+    { emoji: '👁️', label: 'Eye Care' },
+    { emoji: '💉', label: 'Injection' },
+    { emoji: '🩹', label: 'First Aid' },
+    { emoji: '🧬', label: 'Lab Test' },
+    { emoji: '🏥', label: 'Hospital' },
+    { emoji: '🚑', label: 'Ambulance' },
+    
+    // Technology
+    { emoji: '📱', label: 'Technology' },
+    { emoji: '💻', label: 'Computer' },
+    { emoji: '⌨️', label: 'Keyboard' },
+    { emoji: '🖥️', label: 'Monitor' },
+    { emoji: '🖨️', label: 'Printer' },
+    { emoji: '📷', label: 'Camera' },
+    { emoji: '🎧', label: 'Headphones' },
+    { emoji: '⌚', label: 'Smart Watch' },
+    { emoji: '🔋', label: 'Battery' },
+    { emoji: '💾', label: 'Storage' },
+    
+    // Education
+    { emoji: '📚', label: 'Education' },
+    { emoji: '✏️', label: 'Stationery' },
+    { emoji: '�', label: 'Books' },
+    { emoji: '🎓', label: 'Graduation' },
+    { emoji: '🏫', label: 'School' },
+    { emoji: '📝', label: 'Exam' },
+    { emoji: '🧮', label: 'Calculator' },
+    { emoji: '🔬', label: 'Science' },
+    { emoji: '🌍', label: 'Geography' },
+    { emoji: '🎯', label: 'Course' },
+    
+    // Business & Work
+    { emoji: '�💼', label: 'Business' },
+    { emoji: '🏢', label: 'Office' },
+    { emoji: '📊', label: 'Analytics' },
+    { emoji: '�', label: 'Investment' },
+    { emoji: '📈', label: 'Stocks' },
+    { emoji: '🤝', label: 'Meeting' },
+    { emoji: '✈️', label: 'Business Trip' },
+    { emoji: '📋', label: 'Planning' },
+    { emoji: '⚖️', label: 'Legal' },
+    { emoji: '🏦', label: 'Bank' },
+    
+    // Travel & Vacation
+    { emoji: '🏖️', label: 'Travel' },
+    { emoji: '🏨', label: 'Hotel' },
+    { emoji: '🎫', label: 'Tickets' },
+    { emoji: '🧳', label: 'Luggage' },
+    { emoji: '�️', label: 'Map' },
+    { emoji: '🎡', label: 'Amusement Park' },
+    { emoji: '🏛️', label: 'Museum' },
+    { emoji: '🗽', label: 'Landmark' },
+    { emoji: '🏔️', label: 'Mountain' },
+    { emoji: '🏝️', label: 'Island' },
+    
+    // Health & Fitness
+    { emoji: '🏃', label: 'Fitness' },
+    { emoji: '🏋️', label: 'Gym' },
+    { emoji: '🧘', label: 'Yoga' },
+    { emoji: '🏊', label: 'Swimming' },
+    { emoji: '�', label: 'Cycling' },
+    { emoji: '⚽', label: 'Sports' },
+    { emoji: '🥊', label: 'Boxing' },
+    { emoji: '🏸', label: 'Badminton' },
+    { emoji: '🎾', label: 'Tennis' },
+    { emoji: '🏀', label: 'Basketball' },
+    
+    // Hobbies & Interests
+    { emoji: '🎨', label: 'Hobbies' },
+    { emoji: '�', label: 'Photography' },
+    { emoji: '🎣', label: 'Fishing' },
+    { emoji: '🌱', label: 'Gardening' },
+    { emoji: '🧵', label: 'Sewing' },
+    { emoji: '🎲', label: 'Board Games' },
+    { emoji: '🧩', label: 'Puzzle' },
+    { emoji: '📚', label: 'Reading' },
+    { emoji: '✍️', label: 'Writing' },
+    { emoji: '🎪', label: 'Hobby' },
+    
+    // Gifts & Special Occasions
+    { emoji: '🎁', label: 'Gifts' },
+    { emoji: '�', label: 'Birthday' },
+    { emoji: '💐', label: 'Flowers' },
+    { emoji: '💝', label: 'Valentine' },
+    { emoji: '🎄', label: 'Christmas' },
+    { emoji: '�', label: 'Halloween' },
+    { emoji: '🎊', label: 'Celebration' },
+    { emoji: '🎉', label: 'Party' },
+    { emoji: '💒', label: 'Wedding' },
+    { emoji: '🕯️', label: 'Candle' },
+    
+    // Subscriptions & Services
+    { emoji: '📰', label: 'Subscriptions' },
+    { emoji: '📺', label: 'Streaming' },
+    { emoji: '🎬', label: 'Netflix' },
+    { emoji: '🎧', label: 'Spotify' },
+    { emoji: '📧', label: 'Email Service' },
+    { emoji: '☁️', label: 'Cloud Storage' },
+    { emoji: '🔒', label: 'Security' },
+    { emoji: '📱', label: 'App Subscription' },
+    { emoji: '�️', label: 'Magazine' },
+    { emoji: '📻', label: 'Radio' },
+    
+    // Banking & Finance
+    { emoji: '💳', label: 'Banking' },
+    { emoji: '💸', label: 'Expense' },
+    { emoji: '🏧', label: 'ATM' },
+    { emoji: '�', label: 'Trading' },
+    { emoji: '🪙', label: 'Coins' },
+    { emoji: '💲', label: 'Cash' },
+    { emoji: '🧾', label: 'Receipt' },
+    { emoji: '📊', label: 'Finance' },
+    { emoji: '💱', label: 'Exchange' },
+    { emoji: '🏛️', label: 'Government' },
+    
+    // Pets & Animals
+    { emoji: '🐕', label: 'Pet Care' },
+    { emoji: '�', label: 'Cat' },
+    { emoji: '🐕', label: 'Dog' },
+    { emoji: '🐦', label: 'Bird' },
+    { emoji: '🐠', label: 'Fish' },
+    { emoji: '🦎', label: 'Reptile' },
+    { emoji: '🐹', label: 'Hamster' },
+    { emoji: '🐰', label: 'Rabbit' },
+    { emoji: '🦔', label: 'Hedgehog' },
+    { emoji: '🐢', label: 'Turtle' },
+    
+    // Maintenance & Repairs
+    { emoji: '🔧', label: 'Maintenance' },
+    { emoji: '�', label: 'Repair' },
+    { emoji: '🪛', label: 'Tools' },
+    { emoji: '🧰', label: 'Toolbox' },
+    { emoji: '🔩', label: 'Hardware' },
+    { emoji: '🪚', label: 'Carpentry' },
+    { emoji: '🔧', label: 'Plumbing' },
+    { emoji: '⚡', label: 'Electrical' },
+    { emoji: '🎨', label: 'Painting' },
+    { emoji: '🧹', label: 'Cleaning' },
+    
+    // Miscellaneous
+    { emoji: '🔄', label: 'Other' },
+    { emoji: '❓', label: 'Unknown' },
+    { emoji: '📦', label: 'Package' },
+    { emoji: '🎪', label: 'Event' },
+    { emoji: '�', label: 'Special' },
+    { emoji: '🔥', label: 'Hot Deal' },
+    { emoji: '�', label: 'Important' },
+    { emoji: '⭐', label: 'Favorite' },
+    { emoji: '🎯', label: 'Goal' },
+    { emoji: '🌈', label: 'Colorful' }
+  ];
 
   const handleThemeToggle = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -52,16 +273,51 @@ const Settings = () => {
 
   const handleAddCategory = (e) => {
     e.preventDefault();
-    if (newCategory.trim()) {
-      addCategory(newCategory.trim());
-      setNewCategory('');
+    const trimmedCategory = newCategory.trim();
+    
+    if (!trimmedCategory) {
+      alert('Please enter a category name');
+      return;
     }
+    
+    if (categories.includes(trimmedCategory)) {
+      alert('This category already exists');
+      return;
+    }
+    
+    addCategory(trimmedCategory);
+    setNewCategory('');
+    setShowEmojiSuggestions(false);
+    success('Category Added!', `"${trimmedCategory}" has been added to your categories.`);
   };
 
+  const handleEmojiClick = (emoji, label) => {
+    setNewCategory(`${emoji} ${label}`);
+    setShowEmojiSuggestions(false);
+    setEmojiSearchTerm('');
+  };
+
+  // Filter emojis based on search term
+  const filteredEmojis = emojiSuggestions.filter(item =>
+    item.label.toLowerCase().includes(emojiSearchTerm.toLowerCase())
+  );
+
   const handleRemoveCategory = (category) => {
-    if (window.confirm(`Are you sure you want to remove "${category}"?`)) {
-      removeCategory(category);
+    // Check if category is being used in any expenses
+    const categoryInUse = expenses.some(expense => expense.category === category);
+    
+    if (categoryInUse) {
+      const confirmDelete = window.confirm(
+        `"${category}" is being used in ${expenses.filter(e => e.category === category).length} expense(s). ` +
+        `Are you sure you want to remove it? This may affect your expense categorization.`
+      );
+      if (!confirmDelete) return;
+    } else {
+      if (!window.confirm(`Are you sure you want to remove "${category}"?`)) return;
     }
+    
+    removeCategory(category);
+    success('Category Removed!', `"${category}" has been removed from your categories.`);
   };
 
   const handleImport = (e) => {
@@ -128,9 +384,9 @@ const Settings = () => {
       clearAllData();
       setConfirmClear('');
       setShowDangerZone(false);
-      alert('All data has been cleared.');
+      success('Expense Data Cleared!', 'All expense records have been deleted. Your categories and settings are preserved.');
     } else {
-      alert('Please type "CLEAR ALL DATA" to confirm.');
+      alert('Please type "CLEAR ALL DATA" exactly as shown to confirm.');
     }
   };
 
@@ -245,6 +501,14 @@ const Settings = () => {
                       placeholder="e.g., 🎮 Gaming, 🍕 Food, 🚗 Transport"
                       className="form-input"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiSuggestions(!showEmojiSuggestions)}
+                      className="btn-secondary"
+                      title="Choose emoji"
+                    >
+                      😊
+                    </button>
                     <button type="submit" className="btn-primary">
                       <Plus size={16} />
                       Add
@@ -252,6 +516,56 @@ const Settings = () => {
                   </div>
                 </div>
               </form>
+
+              {/* Emoji Suggestions */}
+              {showEmojiSuggestions && (
+                <div className="emoji-suggestions">
+                  <div className="emoji-suggestions-header">
+                    <h5 className="font-medium mb-2">✨ Choose an emoji for your category</h5>
+                    <button
+                      onClick={() => {
+                        setShowEmojiSuggestions(false);
+                        setEmojiSearchTerm('');
+                      }}
+                      className="close-btn"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  
+                  {/* Search box */}
+                  <div className="emoji-search-box">
+                    <input
+                      type="text"
+                      placeholder="Search emojis... (e.g., food, travel, tech)"
+                      value={emojiSearchTerm}
+                      onChange={(e) => setEmojiSearchTerm(e.target.value)}
+                      className="emoji-search-input"
+                    />
+                  </div>
+                  
+                  <div className="emoji-grid">
+                    {filteredEmojis.map((item, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleEmojiClick(item.emoji, item.label)}
+                        className="emoji-item"
+                        title={`${item.emoji} ${item.label}`}
+                      >
+                        <span className="emoji">{item.emoji}</span>
+                        <span className="emoji-label">{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {filteredEmojis.length === 0 && emojiSearchTerm && (
+                    <div className="no-results">
+                      <p>No emojis found for "{emojiSearchTerm}"</p>
+                      <p className="text-sm text-gray-400">Try searching for: food, travel, tech, health, etc.</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Category List */}
               <div className="category-list">
@@ -460,7 +774,7 @@ const Settings = () => {
                 </div>
                 <div>
                   <div className="setting-title danger">Danger Zone</div>
-                  <div className="setting-subtitle">Irreversible actions</div>
+                  <div className="setting-subtitle">Clear expense data (categories preserved)</div>
                 </div>
               </h3>
             </div>
@@ -472,14 +786,15 @@ const Settings = () => {
                   className="btn-danger-outline w-full"
                 >
                   <AlertTriangle size={16} />
-                  Show Danger Zone
+                  Clear Expense Data
                 </button>
               ) : (
                 <div className="danger-content">
                   <div className="danger-warning">
-                    <h4 className="font-medium text-red-400 mb-2">⚠️ Clear All Data</h4>
+                    <h4 className="font-medium text-red-400 mb-2">⚠️ Clear All Expense Data</h4>
                     <p className="text-sm text-gray-300 mb-4">
-                      This will permanently delete all your expenses and reset categories to default. 
+                      This will permanently delete all your expense records and transaction history. 
+                      Your custom categories and app settings will be preserved.
                       This action cannot be undone.
                     </p>
                     
@@ -498,7 +813,7 @@ const Settings = () => {
                           className="btn-danger"
                           disabled={confirmClear !== 'CLEAR ALL DATA'}
                         >
-                          Clear All Data
+                          Clear Expense Data
                         </button>
                         <button
                           onClick={() => {
