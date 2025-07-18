@@ -112,7 +112,7 @@ const Calculator = () => {
     <div className="calculator-page">
       <div className="page-header">
         <h1>🧮 Calculator</h1>
-        <p>Apple-style calculator with expense integration</p>
+        <p>calculator for expense</p>
       </div>
 
       {showSuccess && (
